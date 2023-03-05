@@ -9,6 +9,7 @@ package org.bsplines.ltexls.server
 
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
+import org.bsplines.ltexls.settings.SettingsManager
 import org.bsplines.ltexls.tools.I18n
 import org.bsplines.ltexls.tools.Logging
 import org.eclipse.lsp4j.DidChangeConfigurationParams
@@ -24,7 +25,8 @@ class LtexWorkspaceServiceTest {
   @Test
   fun testMiscellaneous() {
     val server = LtexLanguageServer()
-    val service = LtexWorkspaceService(server)
+    val settingsManager = SettingsManager()
+    val service = LtexWorkspaceService(server, settingsManager)
     val settings = JsonObject()
     settings.add("ltex", JsonObject())
     service.didChangeConfiguration(DidChangeConfigurationParams(settings))
@@ -59,7 +61,8 @@ class LtexWorkspaceServiceTest {
   @Test
   fun testGetServerStatus() {
     val server = LtexLanguageServer()
-    val service = LtexWorkspaceService(server)
+    val settingsManager = SettingsManager()
+    val service = LtexWorkspaceService(server, settingsManager)
     val params = ExecuteCommandParams("_ltex.getServerStatus", emptyList())
     val result: JsonObject = (service.executeCommand(params).get() as JsonElement).asJsonObject
 
@@ -75,7 +78,8 @@ class LtexWorkspaceServiceTest {
   companion object {
     private fun assertCheckDocumentResult(uri: String, expected: Boolean) {
       val server = LtexLanguageServer()
-      val service = LtexWorkspaceService(server)
+      val settingsManager = SettingsManager()
+      val service = LtexWorkspaceService(server, settingsManager)
 
       val argument = JsonObject()
       argument.addProperty("uri", uri)

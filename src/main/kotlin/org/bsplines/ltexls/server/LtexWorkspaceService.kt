@@ -7,8 +7,10 @@
 
 package org.bsplines.ltexls.server
 
+import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.sun.management.OperatingSystemMXBean
+import org.bsplines.ltexls.settings.SettingsManager
 import org.bsplines.ltexls.tools.FileIo
 import org.bsplines.ltexls.tools.I18n
 import org.bsplines.ltexls.tools.Logging
@@ -21,6 +23,7 @@ import org.eclipse.lsp4j.Range
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.eclipse.lsp4j.jsonrpc.CompletableFutures
 import org.eclipse.lsp4j.services.WorkspaceService
+import java.io.File
 import java.lang.management.ManagementFactory
 import java.net.URI
 import java.net.URISyntaxException
@@ -37,6 +40,7 @@ import java.util.concurrent.TimeoutException
 
 class LtexWorkspaceService(
   val languageServer: LtexLanguageServer,
+  val settingsManager: SettingsManager,
 ) : WorkspaceService {
   override fun didChangeConfiguration(params: DidChangeConfigurationParams) {
     this.languageServer.ltexTextDocumentService.executeFunctionForEachDocument {
@@ -70,8 +74,22 @@ class LtexWorkspaceService(
     return when (params.command) {
       CHECK_DOCUMENT_COMMAND_NAME -> executeCheckDocumentCommand(params.arguments[0] as JsonObject)
       GET_SERVER_STATUS_COMMAND_NAME -> executeGetServerStatusCommand()
+      ADD_TO_DICTIONARY_COMMAND_NAME -> executeAddToDictionaryCommand(params)
       else -> failCommand(I18n.format("unknownCommand", params.command))
     }
+  }
+
+  private fun executeAddToDictionaryCommand(params: ExecuteCommandParams): CompletableFuture<Any> {
+    val args = params.arguments[0] as JsonObject
+    val wordsMap = args.get("words") as JsonObject
+    val words = wordsMap.get(settingsManager.settings.languageShortCode) as JsonArray
+    var fileLines = words.joinToString("\n") {
+      it.toString().removeSurrounding("\"")
+    }
+    fileLines += "\n"
+    File(settingsManager.settings.dictionaryFile).appendText(fileLines)
+    executeCheckDocumentCommand(args)
+    return CompletableFuture.completedFuture("done")
   }
 
   fun executeCheckDocumentCommand(arguments: JsonObject): CompletableFuture<Any> {
@@ -197,6 +215,7 @@ class LtexWorkspaceService(
   companion object {
     private const val CHECK_DOCUMENT_COMMAND_NAME = "_ltex.checkDocument"
     private const val GET_SERVER_STATUS_COMMAND_NAME = "_ltex.getServerStatus"
+    private const val ADD_TO_DICTIONARY_COMMAND_NAME = "_ltex.addToDictionary"
 
     private const val CHECK_CHECKING_STATUS_MILLISECONDS = 10L
     private const val MILLISECONDS_PER_SECOND = 1e3

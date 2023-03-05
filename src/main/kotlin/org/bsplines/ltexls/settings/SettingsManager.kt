@@ -45,6 +45,7 @@ class SettingsManager {
       }
 
       languageToolInterface?.dictionary = value.dictionary
+      languageToolInterface?.dictionaryFile = value.dictionaryFile
       languageToolInterface?.disabledRules = value.disabledRules
       languageToolInterface?.languageToolOrgUsername = value.languageToolOrgUsername
       languageToolInterface?.languageToolOrgApiKey = value.languageToolOrgApiKey

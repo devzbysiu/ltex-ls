@@ -8,9 +8,13 @@
 package org.bsplines.ltexls.languagetool
 
 import org.bsplines.ltexls.parsing.AnnotatedTextFragment
+import java.io.File
+import java.nio.file.Files
+import java.nio.file.Paths
 
 abstract class LanguageToolInterface {
   var dictionary: Set<String> = emptySet()
+  var dictionaryFile: String = ""
   var disabledRules: Set<String> = emptySet()
 
   var languageToolOrgUsername = ""
@@ -30,10 +34,14 @@ abstract class LanguageToolInterface {
     annotatedTextFragment: AnnotatedTextFragment,
     match: LanguageToolRuleMatch,
   ): Boolean {
+    val dictionary = when (Files.isRegularFile(Paths.get(dictionaryFile))) {
+      true -> this.dictionary.plus(File(dictionaryFile).readLines())
+      false -> this.dictionary
+    }
     return (
       (
         !match.isUnknownWordRule()
-        || !this.dictionary.contains(
+        || !dictionary.contains(
           annotatedTextFragment.getSubstringOfPlainText(match.fromPos, match.toPos),
         )
       )

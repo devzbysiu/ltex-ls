@@ -43,7 +43,7 @@ class LtexLanguageServer : LanguageServer, LanguageClientAware {
   val codeActionProvider = CodeActionProvider(this.settingsManager)
   val completionListProvider = CompletionListProvider(this.settingsManager)
   val ltexTextDocumentService = LtexTextDocumentService(this)
-  val ltexWorkspaceService = LtexWorkspaceService(this)
+  val ltexWorkspaceService = LtexWorkspaceService(this, this.settingsManager)
   val startupInstant: Instant = Instant.now()
 
   var clientSupportsWorkDoneProgress: Boolean = false

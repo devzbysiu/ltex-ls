@@ -19,6 +19,7 @@ data class Settings(
   private val _enabled: Set<String>? = null,
   private val _languageShortCode: String? = null,
   private val _allDictionaries: Map<String, Set<String>>? = null,
+  private val _dictionaryFile: String? = null,
   private val _allDisabledRules: Map<String, Set<String>>? = null,
   private val _allEnabledRules: Map<String, Set<String>>? = null,
   private val _allHiddenFalsePositives: Map<String, Set<HiddenFalsePositive>>? = null,
@@ -45,6 +46,8 @@ data class Settings(
     get() = (this._languageShortCode ?: "en-US")
   val dictionary: Set<String>
     get() = (this._allDictionaries?.get(this.languageShortCode) ?: setOf())
+  val dictionaryFile: String
+    get() = (this._dictionaryFile ?: "")
   val disabledRules: Set<String>
     get() = (this._allDisabledRules?.get(this.languageShortCode) ?: setOf())
   val enabledRules: Set<String>
@@ -202,6 +205,9 @@ data class Settings(
           getSettingFromJsonAsJsonObject(jsonWorkspaceSpecificSettings2, "dictionary"),
         ),
       )
+      var dictionaryFile: String? = getSettingFromJsonAsString(jsonSettings, "dictionaryFile")
+      dictionaryFile = dictionaryFile
+        ?.replace("<language>", languageShortCode ?: "en-US")
       val allDisabledRules: Map<String, Set<String>>? = mergeMapOfListsIntoMapOfSets(
         convertJsonObjectToMapOfLists(
           getSettingFromJsonAsJsonObject(jsonWorkspaceSpecificSettings2, "disabledRules"),
@@ -299,6 +305,7 @@ data class Settings(
         enabled,
         languageShortCode,
         allDictionaries,
+        dictionaryFile,
         allDisabledRules,
         allEnabledRules,
         allHiddenFalsePositives,
